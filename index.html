@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BAJIGUR 04/18</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="config.js"></script>
+  <style>
+    nav { margin-bottom: 2rem; border-bottom: 1px solid #e5e9f0; padding-bottom: 1rem; }
+    
+    #formCari button[type="submit"]:hover {
+      background-color: #1b4f72 !important;
+      border-color: #1b4f72 !important;
+    }
+
+    #formCari button[type="reset"]:hover {
+      background-color: #e5e8e8 !important;
+      color: #2c3e50 !important;
+    }
+    
+    #invoiceCard {
+      width: 150mm;
+      height: 100mm;
+      box-sizing: border-box;
+      background: #ffffff;
+      color: #222222;
+      padding: 6mm 10mm;
+      border: none;
+      border-radius: 0;
+      font-family: Arial, sans-serif;
+      position: absolute;
+      left: -9999px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Tabel Styling untuk Admin */
+    table th { text-align: center; font-size: 0.9rem; }
+    table td { vertical-align: middle; font-size: 0.9rem; }
+    .chk-admin { transform: scale(1.3); cursor: pointer; margin: 0 auto; display: block; }
+
+    /* Custom style hover tombol kwitansi dan link ID */
+    .btn-kwitansi {
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .btn-kwitansi:hover {
+      background-color: #2c3e50 !important;
+      color: #ffffff !important;
+      border-color: #2c3e50 !important;
+    }
+    .link-id-warga {
+      color: var(--pico-primary, #1b4f72);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .link-id-warga:hover {
+      color: #2980b9;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  
+  <header class="container" style="padding-top: 1rem;">
+    <nav>
+      <ul>
+        <img src="https://lh3.googleusercontent.com/d/1SIYiHdF9FNxENv8CF-Q_c3bSEgPaoK6O" alt="Logo RW 18" style="width: 128px; height: 128px; object-fit: contain; vertical-align: middle; margin-right: 4px;" crossorigin="anonymous">
+      </ul>
+      <ul>
+          <li>
+          <h3>BAJIGUR 04/18</h3>
+          <hgroup>
+            <p><strong>B</strong>asis <strong>A</strong>dministrasi <strong>J</strong>aringan <strong>I</strong>nformasi <strong>Gu</strong>yub <strong>R</strong>ukun RT 04 / RW 18</p>
+          </hgroup>
+      </ul>
+      <ul>
+        <li>
+          <a href="#" id="btnAdmin" onclick="bukaModalAdmin()" role="button" class="outline">🔑 Akses Admin</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <form id="formCari">
+      <label for="inputId" id="labelInputId">Masukkan ID Warga</label>
+      <input type="text" id="inputId" placeholder="Ketik ID (misal: P1)" required autocomplete="off" style="margin-bottom: 1.5rem;">
+      
+      <div class="grid">
+        <button type="submit" id="btnSubmitForm">Cari Data Warga</button>
+        <button type="reset" class="secondary outline">Ulang</button>
+      </div>
+    </form>
+
+    <div id="areaHasil" style="margin-top: 2rem;"></div>
+  </main>
+
+  <!-- TEMPLATE INVOICE -->
+  <div id="invoiceCard">
+    <div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2mm;">
+        <div>
+          <h4 style="margin: 0; color: #1a252f; font-size: 11pt; font-weight: bold; font-family: Arial, sans-serif; letter-spacing: 1.2px;">GUYUB RUKUN RT 04</h4>
+          <p style="margin: 1mm 0 0 0; font-size: 7.5pt; color: #555555; font-weight: 500; text-transform: uppercase;">RW 18 Kelurahan Melong</p>
+        </div>
+        <img src="https://lh3.googleusercontent.com/d/1SIYiHdF9FNxENv8CF-Q_c3bSEgPaoK6O" alt="Logo" style="width: 12mm; height: 12mm; object-fit: contain;" crossorigin="anonymous">
+      </div>
+      <div style="border-bottom: 0.5mm double #000000; margin-bottom: 2mm;"></div>
+      <div style="text-align: center; margin-bottom: 2mm;">
+        <h3 style="margin: 0; font-size: 9.5pt; font-weight: bold; color: #000000;">KWITANSI DIGITAL IPL RT04 / RW18</h3>
+      </div>
+      <div style="border-bottom: 0.5mm double #000000; margin-bottom: 2.5mm;"></div>
+      <p style="font-size: 8.5pt; line-height: 1.2; margin: 0 0 2.5mm 0; color: #333333;">
+        Terima Kasih atas pembayaran untuk periode <b style="color: #27ae60;"><span id="invPeriode">JULI 26</span></b>.
+      </p>
+      <div style="background: #f8f9fa; border: 0.2mm solid #e9ecef; border-radius: 1.5mm; padding: 2mm 3mm; margin-bottom: 2mm;">
+        <div id="invNama" style="font-weight: bold; font-size: 9.5pt; color: #2c3e50; margin-bottom: 0.5mm;">-</div>
+        <div id="invAlamat" style="font-size: 8pt; color: #555555; margin-bottom: 0.5mm;">-</div>
+        <div id="invBlokNo" style="font-size: 8pt; color: #666666;">-</div>
+        <div id="invHarga" style="font-size: 8pt; color: #777777;">-</div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 0.2mm solid #eeeeee; padding-top: 2mm;">
+      <div style="font-size: 6.5pt; color: #999999; font-style: italic;">* dokumen ini sah dan digenerate secara otomatis oleh sistem.</div>
+      <div style="text-align: center; min-width: 25mm;">
+        <p style="margin: 0; font-size: 7.5pt; color: #666666;">Bendahara, <span id="invTanggal">-</s></p>
+        <div style="height: 3mm;"></div>
+        <strong id="invBendahara" style="border-bottom: 0.2mm solid #333333; padding-bottom: 0.5mm; color: #2c3e50; font-size: 8.5pt;">Ibu Yayuk</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN -->
+  <dialog id="modalAdmin">
+    <article>
+      <header>
+        <button aria-label="Close" rel="prev" onclick="tutupModalAdmin()"></button>
+        <strong id="modalTitle">🔑 Autentikasi Pengurus</strong>
+      </header>
+      <div id="stepNomorWA">
+        <label for="inputNoWA">Nomor WhatsApp Pengurus:</label>
+        <input type="text" id="inputNoWA" placeholder="Contoh: 628123456789" style="margin-bottom: 1rem;">
+        <button type="button" onclick="kirimOTP()">Kirim Kode OTP</button>
+      </div>
+      <div id="stepOTP" style="display: none;">
+        <p style="font-size: 0.9rem; color: #555;">Kode OTP telah dikirim ke WhatsApp Anda. Masukkan 4 digit kodenya:</p>
+        <label for="inputOTP">Kode OTP:</label>
+        <input type="text" id="inputOTP" placeholder="Masukkan 4 digit OTP" maxlength="4" style="margin-bottom: 1rem; text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+        <button type="button" onclick="verifikasiOTP()">Verifikasi Kode</button>
+      </div>
+      <p id="modalStatus" style="font-size: 0.85rem; margin-top: 1rem; text-align: center; color: #e74c3c;"></p>
+    </article>
+  </dialog>
+
+  <script>
+    // ⚠️ GANTI LINK DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA (/exec)
+    const URL_API = CONFIG.URL_API;
+
+    let isAdmin = false; 
+
+    function getTigaBulanTerakhir() {
+      let tglSekarang = new Date();
+      let namaBulanPenuh = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+      let daftarTigaBulan = [];
+      for (let i = 2; i >= 0; i--) {
+        let d = new Date(tglSekarang.getFullYear(), tglSekarang.getMonth() - i, 1);
+        let bName = namaBulanPenuh[d.getMonth()];
+        let thn = d.getFullYear().toString().slice(-2);
+        daftarTigaBulan.push("IPL_" + bName + "_" + thn);
+      }
+      return daftarTigaBulan;
+    }
+
+    function bukaModalAdmin() {
+      var btnAdmin = document.getElementById('btnAdmin');
+      if (isAdmin) {
+        isAdmin = false;
+        btnAdmin.innerHTML = "🔑 Akses Admin";
+        btnAdmin.className = "outline";
+        tampilkanPesanNotif("Berhasil keluar dari mode Admin.");
+        
+        // Kembalikan ke form Warga
+        document.getElementById('labelInputId').innerText = "Masukkan ID Warga";
+        document.getElementById('inputId').required = true; // Warga wajib isi ID
+        document.getElementById('inputId').placeholder = "Ketik ID (misal: P1)";
+        document.getElementById('inputId').value = "";
+        document.getElementById('btnSubmitForm').innerText = "Cari Data Warga";
+        document.getElementById('areaHasil').innerHTML = ''; 
+      } else {
+        document.getElementById('inputNoWA').value = "";
+        document.getElementById('inputOTP').value = "";
+        document.getElementById('stepNomorWA').style.display = "block";
+        document.getElementById('stepOTP').style.display = "none";
+        document.getElementById('modalStatus').innerText = "";
+        document.getElementById('modalAdmin').showModal();
+      }
+    }
+
+    function tutupModalAdmin() { document.getElementById('modalAdmin').close(); }
+
+    function kirimOTP() {
+      let noWA = document.getElementById('inputNoWA').value.trim();
+      if (!noWA) { 
+        document.getElementById('modalStatus').innerText = "Nomor WhatsApp kosong!"; 
+        return; 
+      }
+      
+      let btnKirim = document.querySelector('#stepNomorWA button');
+      btnKirim.setAttribute('aria-busy', 'true');
+      btnKirim.innerText = 'Mengirim OTP...';
+      document.getElementById('modalStatus').innerText = "";
+
+      fetch(URL_API, {
+        method: "POST",
+        body: JSON.stringify({ action: "requestOTP", noWA: noWA })
+      })
+      .then(res => res.json())
+      .then(res => {
+        btnKirim.removeAttribute('aria-busy');
+        btnKirim.innerText = 'Kirim Kode OTP';
+
+        if (res.status === "error") throw new Error(res.pesan);
+
+        // Jika sukses
+        document.getElementById('stepNomorWA').style.display = "none";
+        document.getElementById('stepOTP').style.display = "block";
+      })
+      .catch(err => {
+        btnKirim.removeAttribute('aria-busy');
+        btnKirim.innerText = 'Kirim Kode OTP';
+        document.getElementById('modalStatus').innerText = err.message;
+      });
+    }
+
+    function verifikasiOTP() {
+      let pinInput = document.getElementById('inputOTP').value.trim();
+      if (!pinInput) {
+        document.getElementById('modalStatus').innerText = "Kode OTP kosong!";
+        return;
+      }
+
+      let btnVerif = document.querySelector('#stepOTP button');
+      btnVerif.setAttribute('aria-busy', 'true');
+      btnVerif.innerText = 'Memverifikasi...';
+      document.getElementById('modalStatus').innerText = "";
+
+      fetch(URL_API, {
+        method: "POST",
+        body: JSON.stringify({ action: "verifyOTP", pinInput: pinInput })
+      })
+      .then(res => res.json())
+      .then(res => {
+        btnVerif.removeAttribute('aria-busy');
+        btnVerif.innerText = 'Verifikasi Kode';
+
+        if (res.status === "error") throw new Error(res.pesan);
+
+        // Jika sukses
+        isAdmin = true;
+        document.getElementById('btnAdmin').innerHTML = "🔓 Admin Aktif";
+        document.getElementById('btnAdmin').className = ""; 
+        tutupModalAdmin();
+        tampilkanPesanNotif(res.pesan); // Mengambil pesan sukses dari .pesan API
+
+        document.getElementById('labelInputId').innerText = "Mode Admin (Kosongkan ID untuk tarik semua data)";
+        document.getElementById('inputId').required = false; 
+        document.getElementById('inputId').placeholder = "Ketik ID atau biarkan kosong";
+        document.getElementById('inputId').value = "";
+        document.getElementById('btnSubmitForm').innerText = "Cari / Tampilkan Rekap";
+        document.getElementById('areaHasil').innerHTML = '';
+      })
+      .catch(err => {
+        btnVerif.removeAttribute('aria-busy');
+        btnVerif.innerText = 'Verifikasi Kode';
+        document.getElementById('modalStatus').innerText = err.message;
+      });
+    }
+
+    function tampilkanPesanNotif(pesan) {
+      let notifDiv = document.createElement('div');
+      notifDiv.style = "position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; padding: 12px 20px; border-radius: 8px; z-index: 9999; font-weight: bold;";
+      notifDiv.innerText = pesan;
+      document.body.appendChild(notifDiv);
+      setTimeout(() => notifDiv.remove(), 3000);
+    }
+
+    // ==========================================
+    // LOGIKA PENCARIAN (REKAP vs SINGLE)
+    // ==========================================
+    document.getElementById('formCari').addEventListener('submit', function(e) {
+      e.preventDefault(); 
+      var areaHasil = document.getElementById('areaHasil');
+      var idWarga = document.getElementById('inputId').value.trim().toUpperCase(); 
+      areaHasil.innerHTML = '<p aria-busy="true">Sedang menyeduh data...</p>';
+
+      if (isAdmin && idWarga === "") {
+        fetch(`${URL_API}?action=ambilSemuaDataWarga`)
+          .then(res => res.json())
+          .then(res => {
+            // TANGKAP ERROR API
+            if (res.status === "error") throw new Error(res.pesan);
+            renderTabelAdmin(res.data); // PASSING MURNI OBJECT .data
+          })
+          .catch(err => {
+            // TAMPILKAN PESAN DARI API
+            areaHasil.innerHTML = `<p style="color:#e74c3c; font-weight:bold;">❌ ${err.message}</p>`;
+          });
+      } 
+      else {
+        cariSingleData(idWarga);
+      }
+    });
+
+    function cariSingleData(idWarga) {
+      var areaHasil = document.getElementById('areaHasil');
+      if (idWarga) {
+        document.getElementById('inputId').value = idWarga;
+      }
+      areaHasil.innerHTML = '<p aria-busy="true">Sedang menyeduh data...</p>';
+
+      fetch(`${URL_API}?action=cariDataWarga&id=${encodeURIComponent(idWarga)}`)
+        .then(res => res.json())
+        .then(res => {
+          // TANGKAP ERROR API
+          if (res.status === "error") throw new Error(res.pesan);
+          renderTampilanWargaBiasa(res.data); // PASSING MURNI OBJECT .data
+        })
+        .catch(err => {
+          // TAMPILKAN PESAN DARI API
+          areaHasil.innerHTML = `<p style="color:#e74c3c; font-weight:bold;">❌ ${err.message}</p>`;
+        });
+    }
+
+    document.getElementById('formCari').addEventListener('reset', function() {
+      document.getElementById('areaHasil').innerHTML = '';
+    });
+
+    // ==========================================
+    // RENDER: TABEL ADMIN (BANYAK DATA)
+    // ==========================================
+    function renderTabelAdmin(dataServer) {
+      var areaHasil = document.getElementById('areaHasil');
+      
+      let listWarga = dataServer.dataWarga || [];
+      let daftarTigaBulan = dataServer.periodeTigaBulan || [];
+      let labelBulan = daftarTigaBulan.map(kode => kode.replace("IPL_", "").replace("_", " "));
+
+      let htmlHeaders = '';
+      daftarTigaBulan.forEach((kodeSheet, index) => {
+        let label = labelBulan[index] || '';
+        htmlHeaders += `
+          <th scope="col" width="15%" style="text-align: center;">
+            <div><strong>${label}</strong></div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 6px;">
+              <input type="checkbox" title="Pilih Semua ${label}" onchange="toggleCheckAll('${kodeSheet}', this.checked)" style="margin: 0; transform: scale(1.2); cursor: pointer;">
+              <button type="button" id="btnSimpanKolom_${kodeSheet}" class="outline" style="padding: 0.15rem 0.4rem; font-size: 0.75rem; margin: 0;" title="Simpan Kolom ${label}" onclick="simpanKolomIPL(event, '${kodeSheet}')">💾 Simpan Kolom</button>
+            </div>
+          </th>
+        `;
+      });
+
+      let htmlUI = `
+        <article style="padding: 1rem; overflow-x: auto;">
+          <h5 style="margin-bottom: 1rem;">Rekapitulasi IPL 3 Bulan Terakhir</h5>
+          <table role="grid" style="min-width: 700px;">
+            <thead>
+              <tr>
+                <th scope="col" width="8%">ID</th>
+                <th scope="col" width="22%">Nama</th>
+                <th scope="col" width="15%">Blok</th>
+                ${htmlHeaders}
+                <th scope="col" width="10%">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      listWarga.forEach(warga => {
+        htmlUI += `<tr><td style="cursor: pointer;" onclick="cariSingleData('${warga.ID}')" title="Klik untuk lihat detail ${warga.ID}"><a href="#" class="link-id-warga" onclick="event.preventDefault(); cariSingleData('${warga.ID}');"><strong>${warga.ID}</strong></a></td><td>${warga.Nama}</td><td>${warga.Blok}-${warga.Nomor}</td>`;
+        
+        daftarTigaBulan.forEach(kodeSheet => {
+          let dataBayar = warga.riwayatIPL ? warga.riwayatIPL.find(item => item.periode === kodeSheet) : null;
+          let isLunas = (dataBayar && dataBayar.lunas === true) ? true : false;
+          
+          htmlUI += `<td style="text-align: center;"><input type="checkbox" class="chk-admin" id="chk_${warga.ID}_${kodeSheet}" ${isLunas ? "checked" : ""}></td>`;
+        });
+
+        htmlUI += `<td style="text-align: center;"><button type="button" id="btnSimpan_${warga.ID}" class="outline" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin: 0;" onclick="simpanBarisIPL(event, '${warga.ID}', '${warga.Nama}')">💾 Simpan Baris</button></td></tr>`;
+      });
+
+      htmlUI += `</tbody></table></article>`;
+      areaHasil.innerHTML = htmlUI;
+    }
+
+    // ==========================================
+    // RENDER: CARD VIEW (1 DATA)
+    // ==========================================
+    function renderTampilanWargaBiasa(dataWarga) {
+      var areaHasil = document.getElementById('areaHasil');
+      let daftarTigaBulan = getTigaBulanTerakhir();
+      let htmlUI = `
+        <article>
+          <header><strong>${dataWarga.Nama}</strong> (${dataWarga.ID})</header>
+          <ul style="margin-bottom: 1rem;">
+            <li><strong>Alamat:</strong> ${dataWarga.Alamat}</li>
+            <li><strong>Blok / No:</strong> ${dataWarga.Blok} - ${dataWarga.Nomor}</li>
+          </ul>
+          <h5 style="margin-bottom: 0.5rem;">Status IPL 3 Bulan Terakhir:</h5>
+      `;
+
+      if (isAdmin) htmlUI += `<form id="formUpdateIPL" onsubmit="simpanStatusIPL(event, '${dataWarga.ID}', '${dataWarga.Nama}')">`;
+      htmlUI += `<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem;">`;
+      
+      let adaDataTampil = false;
+      daftarTigaBulan.forEach(kodeSheet => {
+        let dataBayar = dataWarga.riwayatIPL.find(item => item.periode === kodeSheet);
+        let isLunas = dataBayar ? true : false;
+        
+        // Kalau bukan admin dan belum lunas, sembunyikan kotak ini
+        if (!isAdmin && !isLunas) return; 
+        
+        adaDataTampil = true;
+        let bgCard = isLunas ? "#e8f8f5" : "#fdf2f2";
+        let borderColor = isLunas ? "#2ecc71" : "#e74c3c";
+        
+        htmlUI += `
+          <div style="flex: 1; min-width: 140px; background: ${bgCard}; border: 1px solid ${borderColor}; padding: 12px; border-radius: 8px; text-align: center;">
+            <strong style="display: block; margin-bottom: 5px; color: #333;">${kodeSheet.replace("IPL_", "").replace("_", " ")}</strong>
+            <label style="cursor: ${isAdmin ? "pointer" : "default"}; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; width: 100%; gap: 5px;">
+              <input type="checkbox" name="chk_${kodeSheet}" ${isLunas ? "checked" : ""} ${isAdmin ? "" : "disabled"} style="margin: 0;">
+              ${isLunas ? '<span style="color: #27ae60;">LUNAS</span>' : '<span style="color: #c0392b;">BELUM</span>'}
+            </label>
+        `;
+
+        if (isLunas) {
+          let dtWarga = JSON.stringify(dataWarga).replace(/"/g, '&quot;');
+          let dtBayar = JSON.stringify(dataBayar).replace(/"/g, '&quot;');
+          htmlUI += `<div style="margin-top: 8px;"><button type="button" class="btn-kwitansi outline secondary" style="font-size: 0.7rem; padding: 4px 8px;" onclick="downloadInvoiceJPG(${dtWarga}, ${dtBayar})">📥 Kwitansi</button></div>`;
+        }
+        htmlUI += `</div>`;
+      });
+
+      if (!isAdmin && !adaDataTampil) {
+        htmlUI += `<p style="color: #7f8c8d; font-style: italic; width: 100%;">Belum ada catatan pembayaran lunas untuk 3 bulan terakhir.</p>`;
+      }
+      htmlUI += `</div>`;
+      
+      if (isAdmin) {
+        htmlUI += `<div style="margin-top: 1.5rem; text-align: right;"><button type="submit" id="btnSimpanIPL" class="contrast">💾 Simpan</button></div></form></article>`;
+      } else {
+        htmlUI += `</article>`;
+      }
+      areaHasil.innerHTML = htmlUI;
+    }
+
+    // ==========================================
+    // SERVICE UPDATE (CARD VIEW & TABEL)
+    // ==========================================
+    function simpanStatusIPL(e, idWarga, namaWarga) {
+      e.preventDefault();
+      let btn = document.getElementById('btnSimpanIPL');
+      btn.setAttribute('aria-busy', 'true');
+      btn.innerText = 'Menyimpan...';
+
+      let statusPerBulan = {};
+      document.querySelectorAll('#formUpdateIPL input[type="checkbox"]').forEach(chk => {
+        statusPerBulan[chk.name.replace("chk_", "")] = chk.checked;
+      });
+
+      fetch(URL_API, { 
+        method: "POST", 
+        body: JSON.stringify({ action: "simpanPerubahanIPL", idWarga: idWarga, namaWarga: namaWarga, statusPerBulan: statusPerBulan }) 
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "error") throw new Error(res.pesan);
+        
+        tampilkanPesanNotif(res.pesan);
+        // Lakukan fetch ulang data terbaru
+        return fetch(`${URL_API}?action=cariDataWarga&id=${idWarga}`);
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.removeAttribute('aria-busy');
+        btn.innerText = '💾 Simpan';
+
+        if (res.status === "error") throw new Error(res.pesan);
+        
+        // UNWRAP SECARA KONSISTEN: Ambil murni .data-nya
+        renderTampilanWargaBiasa(res.data);
+      })
+      .catch(err => {
+        btn.removeAttribute('aria-busy');
+        btn.innerText = '💾 Simpan';
+        alert("Gagal: " + err.message);
+      });
+    }
+
+    function simpanBarisIPL(e, idWarga, namaWarga) {
+      e.preventDefault();
+      let btn = document.getElementById('btnSimpan_' + idWarga);
+      btn.setAttribute('aria-busy', 'true');
+      btn.innerText = '...';
+
+      let statusPerBulan = {};
+      // Mengambil daftar periode dari struktur global / DOM tabel secara aman
+      let daftarTigaBulan = [];
+      document.querySelectorAll('th[scope="col"]').forEach(th => {
+        // Ambil label bulan atau sesuaikan dengan struktur header tabel Anda jika diperlukan
+      });
+      
+      // Cara paling aman mengumpulkan dari id checkbox yang terbentuk di baris tersebut
+      document.querySelectorAll(`.chk-admin[id^="chk_${idWarga}_"]`).forEach(chk => {
+        let kodeSheet = chk.id.replace(`chk_${idWarga}_`, "");
+        statusPerBulan[kodeSheet] = chk.checked;
+      });
+
+      fetch(URL_API, { 
+        method: "POST", 
+        body: JSON.stringify({ action: "simpanPerubahanIPL", idWarga: idWarga, namaWarga: namaWarga, statusPerBulan: statusPerBulan }) 
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.removeAttribute('aria-busy');
+        btn.innerText = '💾 Simpan Baris';
+
+        if (res.status === "error") throw new Error(res.pesan);
+
+        tampilkanPesanNotif(res.pesan);
+        btn.className = "outline success";
+        setTimeout(() => { btn.className = "outline"; }, 2000);
+      })
+      .catch(err => {
+        btn.removeAttribute('aria-busy');
+        btn.innerText = '💾 Simpan Baris';
+        alert("Gagal: " + err.message);
+      });
+    }
+
+    function toggleCheckAll(kodeSheet, isChecked) {
+      document.querySelectorAll(`.chk-admin[id$="_${kodeSheet}"]`).forEach(chk => {
+        chk.checked = isChecked;
+      });
+    }
+
+    function simpanKolomIPL(e, kodeSheet) {
+      e.preventDefault();
+      let btn = document.getElementById('btnSimpanKolom_' + kodeSheet);
+      if (btn) {
+        btn.setAttribute('aria-busy', 'true');
+        btn.innerText = '...';
+      }
+
+      let listData = [];
+      document.querySelectorAll(`.chk-admin[id$="_${kodeSheet}"]`).forEach(chk => {
+        // chk.id format: chk_${idWarga}_${kodeSheet}
+        let idWarga = chk.id.substring(4, chk.id.length - (kodeSheet.length + 1));
+        listData.push({
+          idWarga: idWarga,
+          lunas: chk.checked
+        });
+      });
+
+      fetch(URL_API, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "simpanKolomIPL",
+          kodeSheet: kodeSheet,
+          data: listData
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (btn) {
+          btn.removeAttribute('aria-busy');
+          btn.innerText = '💾 Simpan Kolom';
+        }
+
+        if (res.status === "error") throw new Error(res.pesan);
+
+        tampilkanPesanNotif(res.pesan);
+        if (btn) {
+          btn.className = "outline success";
+          setTimeout(() => { btn.className = "outline"; }, 2000);
+        }
+      })
+      .catch(err => {
+        if (btn) {
+          btn.removeAttribute('aria-busy');
+          btn.innerText = '💾 Simpan Kolom';
+        }
+        alert("Gagal: " + err.message);
+      });
+    }
+
+    function downloadInvoiceJPG(dataWarga, dataBayar) {
+      let warga = typeof dataWarga === 'string' ? JSON.parse(dataWarga) : dataWarga;
+      let bayar = typeof dataBayar === 'string' ? JSON.parse(dataBayar) : dataBayar;
+
+      fetch(`${URL_API}?action=ambilNamaBendahara`)
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('invPeriode').innerText = bayar.periode.replace("IPL_", "").replace("_", " ");
+          document.getElementById('invNama').innerText = warga.Nama;
+          document.getElementById('invAlamat').innerText = warga.Alamat;
+          document.getElementById('invBlokNo').innerText = "Blok / No: " + warga.Blok + " - " + warga.Nomor;
+          document.getElementById('invHarga').innerText = "Rp " + (Number(bayar.nominal) || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          document.getElementById('invTanggal').innerText = bayar.waktuBayar;
+          document.getElementById('invBendahara').innerText = res.data !== undefined ? res.data : res;
+
+          html2canvas(document.getElementById('invoiceCard'), { scale: 3, useCORS: true }).then(canvas => {
+            let link = document.createElement('a');
+            link.download = `Invoice_${bayar.periode}_${warga.Nama.replace(/\s+/g, '_')}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+          });
+        });
+    }
+  </script>
+</body>
+</html>

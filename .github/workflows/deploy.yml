@@ -1,0 +1,49 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Inject URL_API Secret into config.js
+        env:
+          URL_API_SECRET: ${{ secrets.URL_API }}
+        run: |
+          if [ -n "$URL_API_SECRET" ]; then
+            echo "Injecting secret URL_API into config.js..."
+            sed -i "s|YOUR_GOOGLE_APPS_SCRIPT_URL_HERE|${URL_API_SECRET}|g" config.js
+          else
+            echo "WARNING: Secret URL_API not found in GitHub Repository Secrets."
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
