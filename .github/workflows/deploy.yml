@@ -1,0 +1,81 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  cleanup-workflow:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.MY_TOKEN }}
+          retain_days: 0
+          keep_minimum_runs: 0
+
+  cleanup-deployment:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      deployments: write
+    steps:
+      - name: Delete Old Deployments
+        uses: strumwolf/delete-deployment-environment@v3
+        with:
+          token: ${{ secrets.MY_TOKEN }}
+          environment: github-pages
+          onlyRemoveDeployments: true
+
+  deploy:
+    needs: [cleanup-workflow, cleanup-deployment]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Inject configuration into config.js
+        env:
+          URL_API_SECRET: ${{ secrets.URL_API }}
+          APP_ID_VAR: ${{ vars.APP_ID }}
+        run: |
+          if [ -n "$URL_API_SECRET" ]; then
+            echo "Injecting URL_API secret into config.js..."
+            sed -i "s|__URL_API__|${URL_API_SECRET}|g" assets/js/config.js
+          else
+            echo "WARNING: URL_API secret not found in GitHub repository Secrets."
+          fi
+
+          if [ -n "$APP_ID_VAR" ]; then
+            echo "Injecting APP_ID variable into config.js..."
+            sed -i "s|__APP_ID__|${APP_ID_VAR}|g" assets/js/config.js
+          else
+            echo "WARNING: APP_ID variable not found in GitHub repository Variables."
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

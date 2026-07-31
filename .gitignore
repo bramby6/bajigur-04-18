@@ -1,0 +1,8 @@
+# Config & Environment Variables
+config.js
+.env
+*.env
+
+# System / OS files
+.DS_Store
+Thumbs.db
